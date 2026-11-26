@@ -1,1 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Human Connect — Master App Specification</title>
+  <style>
+    :root { --bg:#f8fafc; --card:#ffffff; --border:#e2e8f0; --text:#0f172a; --muted:#475569; --accent:#047857; }
+    * { box-sizing: border-box; }
+    body { margin:0; font-family: system-ui, -apple-system, sans-serif; background:var(--bg); color:var(--text); line-height:1.55; }
+    header { position:sticky; top:0; background:#fff; border-bottom:1px solid var(--border); padding:14px 20px; display:flex; flex-wrap:wrap; align-items:center; justify-content:space-between; gap:12px; }
+    h1 { margin:0; font-size:18px; color:var(--accent); }
+    button { background:var(--accent); color:#fff; border:0; padding:9px 14px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; }
+    button:hover { opacity:.92; }
+    main { max-width:920px; margin:22px auto; padding:0 16px 48px; display:grid; gap:16px; }
+    section { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:18px 20px; }
+    h2 { margin:0 0 10px; font-size:16px; color:#065f46; }
+    ul { margin:0; padding-left:20px; }
+    li { margin:6px 0; }
+    code { background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:12.5px; }
+    .muted { color:var(--muted); font-size:13px; }
+  </style>
+</head>
+<body>
+  <header>
+    <div>
+      <h1>Human Connect — Complete App Prompt &amp; Specification</h1>
+      <div class="muted">Includes all custom UI changes, 6 tree designs, export rules &amp; 5,000+ scalability fixes</div>
+    </div>
+    <button onclick="copyAll()">Copy Full Specification</button>
+  </header>
 
+  <main id="spec-content">
+    <section>
+      <h2>1. Core Stack &amp; Server</h2>
+      <ul>
+        <li><strong>Frontend:</strong> React 19, TypeScript, Tailwind CSS v4, Lucide Icons, jsPDF.</li>
+        <li><strong>Backend:</strong> Node.js + Express wrapped in <code>http.createServer(app)</code> on port <code>3000</code> with <code>150mb</code> JSON body limit and multi-project REST APIs (<code>/api/projects</code>, <code>/api/family</code>, <code>/api/collection-links</code>, <code>/api/collect/:token</code>, <code>/api/submissions/:id/approve|reject</code>).</li>
+        <li><strong>Vite WebSocket Fix:</strong> Pass <code>allowedHosts: true</code> and <code>ws: { server: httpServer }</code> to <code>createViteServer</code> unconditionally (even when <code>DISABLE_HMR=true</code>) to prevent <code>WebSocket closed without opened</code> errors on hosted URLs.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>2. Navigation &amp; Upper-Right &vellip; Menu</h2>
+      <ul>
+        <li><strong>Top Bar:</strong> App name + Family name on left; member count + upper-right <code>&vellip;</code> popover menu on right.</li>
+        <li><strong>Upper-Right &vellip; Menu Sections:</strong> (1) <em>Theme &amp; Background</em> (gallery image upload resized to 1400px, Clear BG, opacity slider 10%–75%), (2) <em>Quick Tree Design</em> (persists last selected design in <code>localStorage</code>), (3) <em>App Theme</em> (5 themes: Botanical Emerald, Royal Heritage, Ocean Sapphire, Warm Terracotta, Classic Charcoal).</li>
+        <li><strong>Bottom Dock:</strong> Primary tabs (<em>People</em>, <em>Tree View</em>, <em>Collect</em>) + <em>Toolbox</em> drawer (<em>Relate</em>, <em>Facts</em>, <em>Export PDF, Viewer &amp; Backup</em>).</li>
+        <li><strong>Tree Bar Cleanup:</strong> Remove all Tree Design &amp; App Theme selectors from the bottom tree bar (keep only line toggles, Bisected Couple Circles, Hide In-Laws, Manual Drag, Undo/Reset, Elder-to-Younger left/right move, Scope toggle, and Zoom/Fit).</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>3. All 6 Tree Designs</h2>
+      <ul>
+        <li><strong>Normal Type:</strong> Top-to-bottom generation rows, 1st Gen centered, children below parents, single stem from couple &hearts; badge, rectangular cards.</li>
+        <li><strong>Circle Design:</strong> Exact copy of Normal Type layout, changed to <strong>circular person nodes (116px)</strong> and an <strong>attractive radial gradient background</strong> (<code>#CCFBF1 &rarr; #DBEAFE &rarr; #EDE9FE</code>; soft sky in PDF).</li>
+        <li><strong>Circle Orbit:</strong> Concentric orbital shells (Nucleus, K, L, M...) with <code>360&deg;/N</code> spacing, <strong>recolored using Radial Fan's dark cosmic neon palette</strong> (<code>#070D1F/#0B1530</code> radial backdrop, dashed spokes/stars, Cyan <code>#22D3EE</code>, Pink <code>#F472B6</code>, Yellow <code>#FACC15</code>, Purple <code>#C084FC</code> borders).</li>
+        <li><strong>Dream Tree:</strong> Bottom-up tiers (Root, Bole/Trunk, Limb, Branches, Twigs) with forced Bisected Couple Circles and drag support.</li>
+        <li><strong>Radial Fan:</strong> Bottom-center root fanning upward in semi-circular arcs with dark cosmic neon backdrop &amp; header.</li>
+        <li><strong>Tree Silhouette:</strong> Warm parchment <code>#F7F4EE</code> canvas, 210 golden-angle stipple leaves, charcoal trunk, straight branches.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>4. Features: Directory, Relations, Collect &amp; Facts</h2>
+      <ul>
+        <li><strong>People Directory &amp; Form:</strong> Instant search, Living/Late filter, paginated list, 400px photo upload/camera, manual linking for Parents, Multiple Spouses (with Divorced dashed-line flag), and Children.</li>
+        <li><strong>Relationship Finder:</strong> Multi-path shortest BFS showing all connection routes through multiple marriages.</li>
+        <li><strong>WhatsApp Collect &amp; Approval Queue:</strong> Generate branch links (<code>?collect=token</code>), share via WhatsApp, review &amp; edit submitted entries before approving.</li>
+        <li><strong>Family Facts:</strong> 6 demographic stat cards + blood group filter + one-tap <code>tel:</code> directory.</li>
+      </ul>
+    </section>
+
+    <section>
+      <h2>5. Export &amp; Backup + 5,000+ Member Scalability</h2>
+      <ul>
+        <li><strong>Automatic Design Reuse on Export:</strong> Never ask to choose a Tree Design during PDF export—automatically use the last selected Tree Design.</li>
+        <li><strong>Formats:</strong> Single-Page Tree PDF (Medium/High/Premium), Multi-Page Chart PDF, Standalone Offline HTML Viewer (Search, Relationship Finder, Blood Donors, Privacy checkboxes, HTML escaping), and Full JSON Backup (<code>.hcbackup.json</code> v2).</li>
+        <li><strong>5,000+ Scale Fixes:</strong> O(1) parent/spouse Map lookups, index-pointer BFS (no <code>shift()</code>), loop min/max (no array spreads), reserved PDF header band, proportional font/stroke minimums, skip photos below <code>4pt</code> in dense PDFs, 60s <code>URL.revokeObjectURL</code> delay, and 300-card caps / 400-option search dropdowns in HTML Viewer.</li>
+      </ul>
+    </section>
+  </main>
+
+  <script>
+    function copyAll() {
+      const text = document.getElementById('spec-content').innerText;
+      navigator.clipboard.writeText(text).then(() => {
+        const btn = document.querySelector('header button');
+        const orig = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => (btn.textContent = orig), 2000);
+      });
+    }
+  </script>
+</body>
+</html>
