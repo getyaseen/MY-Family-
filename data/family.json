@@ -1,0 +1,175 @@
+{
+  "appName": "Human Connect",
+  "purpose": "Full-stack genealogy and family tree builder with 6 tree visualizations, multi-project support, WhatsApp branch collection with approval queue, offline HTML viewer, PDF poster/multi-page export, and 5,000+ member scalability.",
+  "stack": {
+    "frontend": ["React 19", "TypeScript", "Tailwind CSS v4", "lucide-react", "jsPDF"],
+    "backend": ["Node.js", "Express", "http.createServer", "Vite middleware"],
+    "optionalMobileCompanion": {
+      "framework": "Flutter (Material 3)",
+      "storage": "sqflite (offline SQLite)",
+      "packages": ["sqflite", "path", "path_provider", "image_picker", "pdf", "printing", "file_picker", "share_plus", "url_launcher"]
+    }
+  },
+  "serverConfig": {
+    "port": 3000,
+    "jsonBodyLimit": "150mb",
+    "viteMiddleware": {
+      "middlewareMode": true,
+      "allowedHosts": true,
+      "wsServerBoundToHttpServer": true,
+      "hmrDisabledFallback": "Keep ws: { server: httpServer } even when DISABLE_HMR=true so reverse-proxy WebSocket connections do not fail"
+    },
+    "apiEndpoints": [
+      "GET /api/projects",
+      "POST /api/projects",
+      "POST /api/projects/:id/activate",
+      "PATCH /api/projects/:id",
+      "POST /api/projects/:id/duplicate",
+      "DELETE /api/projects/:id",
+      "GET /api/family",
+      "PUT /api/family",
+      "POST /api/collection-links",
+      "GET /api/collect/:token",
+      "POST /api/collect/:token",
+      "POST /api/submissions/:id/approve",
+      "POST /api/submissions/:id/reject"
+    ]
+  },
+  "dataModel": {
+    "Person": {
+      "id": "number",
+      "name": "string (required)",
+      "gender": "'M' | 'F'",
+      "photo": "string (optional 400px JPEG Data URL)",
+      "blood": "A+ | A- | B+ | B- | AB+ | AB- | O+ | O- (optional)",
+      "house": "string (optional)",
+      "nick": "string (optional)",
+      "phone": "string (optional)",
+      "birthDate": "string (optional)",
+      "deathDate": "string (optional)",
+      "passedAway": "boolean",
+      "sortOrder": "number (elder-to-younger order)",
+      "manualX": "number | null (optional custom position)",
+      "manualY": "number | null (optional custom position)"
+    },
+    "ParentLink": { "parentId": "number", "childId": "number" },
+    "SpouseLink": { "personA": "number", "personB": "number", "divorced": "boolean" },
+    "FamilyStore": {
+      "familyName": "string",
+      "themeId": "emerald | royal | ocean | sunset | slate",
+      "backgroundImage": "string | null (1400px Data URL)",
+      "backgroundOpacity": "number (0.1 to 0.75, default 0.25)",
+      "people": "Person[]",
+      "parentLinks": "ParentLink[]",
+      "spouseLinks": "SpouseLink[]",
+      "collectionLinks": "CollectionLink[]",
+      "pendingSubmissions": "PendingSubmission[]"
+    }
+  },
+  "uiNavigation": {
+    "topBar": {
+      "left": "Human Connect · <Family Name>",
+      "right": ["Active tab label + member count", "Upper-right MoreVertical (⋮) popover button"],
+      "moreMenuSections": [
+        "1. Theme & Background (Upload 1400px image from gallery, Clear BG, Opacity slider 10%-75%)",
+        "2. Quick Tree Design (Normal Type, Circle Design, Circle Orbit, Dream Tree, Radial Fan, Tree Silhouette)",
+        "3. App Theme (5 color swatches)"
+      ]
+    },
+    "bottomDock": {
+      "primaryTabs": ["People (directory)", "Tree View (tree)", "Collect (collect + pending count)"],
+      "toolboxDrawer": ["Relate (relations)", "Facts (facts)", "Export PDF, Viewer & Backup"]
+    },
+    "treeTabRules": {
+      "removeThemeAndDesignSelectorsFromTreeBar": true,
+      "bottomTreeBarControls": [
+        "Parent-Child Lines toggle",
+        "Bisected Couple Circles toggle",
+        "Hide Son/Daughter-in-Law toggle",
+        "Manual Drag toggle",
+        "Undo (N) + Reset Layout",
+        "Focused Person: Move Left (Elder), Move Right (Younger), Edit & Relationships",
+        "Scope toggle: Full Family vs Near Focus (Fast) — auto Near Focus when >250 people",
+        "Zoom (- / % / + / Fit)"
+      ]
+    }
+  },
+  "appThemes": [
+    { "id": "emerald", "name": "Botanical Emerald", "swatch": "#047857" },
+    { "id": "royal", "name": "Royal Heritage", "swatch": "#6D28D9" },
+    { "id": "ocean", "name": "Ocean Sapphire", "swatch": "#1D4ED8" },
+    { "id": "sunset", "name": "Warm Terracotta", "swatch": "#B45309" },
+    { "id": "slate", "name": "Classic Charcoal", "swatch": "#334155" }
+  ],
+  "treeDesigns": [
+    {
+      "id": "normal",
+      "label": "Normal Type",
+      "layout": "Top-to-bottom generation rows, 1st Gen centered, children directly below parents, curved cubic paths stemming from couple ♥ badge",
+      "nodeShape": "Rounded rectangle cards (152x72px)"
+    },
+    {
+      "id": "circle_design",
+      "label": "Circle Design",
+      "layout": "Exact copy of Normal Type top-to-bottom hierarchy",
+      "nodeShape": "Circular person representation (116x116px rounded-full with soft white ring)",
+      "background": "radial-gradient(circle at 50% 18%, #CCFBF1 0%, #DBEAFE 52%, #EDE9FE 100%) on canvas; soft sky [224, 242, 254] in PDF"
+    },
+    {
+      "id": "circle",
+      "label": "Circle Orbit",
+      "layout": "Concentric orbital shells (Nucleus, K, L, M...) with 360deg/N angular spacing",
+      "colorPattern": "Copied from Radial Fan cosmic neon palette: dark space backdrop (#070D1F / #0B1530 / #132554), dashed spokes & stars, 4-color neon borders (Cyan #22D3EE, Pink #F472B6, Yellow #FACC15, Purple #C084FC), neon pink ♥ couple badge",
+      "nodeShape": "Circular orbs (122px root / 116px members)"
+    },
+    {
+      "id": "dream",
+      "label": "Dream Tree",
+      "layout": "Bottom-up tiers (Root -> Bole/Trunk -> Limb -> Branches -> Twigs)",
+      "behavior": "Forces Bisected Couple Circles (126x126px) and enables dragging nodes freely"
+    },
+    {
+      "id": "cosmic",
+      "label": "Radial Fan",
+      "layout": "Bottom-center root radiating upward in semi-circular arcs (-162deg to -18deg)",
+      "colorPattern": "Dark cosmic radial backdrop, family title + generation count header, glowing #BAE6FD Bezier links, 4-color neon circular nodes (#22D3EE, #F472B6, #FACC15, #C084FC)"
+    },
+    {
+      "id": "silhouette",
+      "label": "Tree Silhouette",
+      "layout": "Bottom central trunk, angled branches, 210 golden-angle phyllotaxis stipple leaves",
+      "colorPattern": "Warm parchment #F7F4EE backdrop, charcoal trunk #1C1917, 4 organic ink palettes"
+    }
+  ],
+  "exportAndBackup": {
+    "designSelectionRule": "NEVER ask for Single-Page Tree Design during PDF export; automatically use the last selected Tree Design persisted in localStorage (human_connect_tree_design_v1).",
+    "pdfModes": ["Single-Page Tree (Medium, High, Premium quality)", "Multi-Page Chart (A4 wrapped text cards + page numbers)"],
+    "scopeOptions": ["Whole Family", "One Branch (Sub-family)"],
+    "privacyCheckboxes": [
+      "hideLadiesPhotos",
+      "hideName",
+      "hideHouse",
+      "hideBlood",
+      "hidePhone",
+      "hideNick",
+      "hidePassedAway"
+    ],
+    "standaloneHtmlViewer": "Single offline .html file with Directory Search, Relationship Finder, Blood Donors & Phone Directory, respecting all privacy flags and escaping HTML.",
+    "jsonBackup": {
+      "format": "human-connect-backup",
+      "version": 2,
+      "compactThreshold": "Compact JSON when >500 people",
+      "preserves": ["people + 400px photos", "parentLinks", "spouseLinks", "sortOrder", "manualX/Y", "themeId", "backgroundImage", "backgroundOpacity"]
+    }
+  },
+  "scaleOptimizations5000Plus": [
+    "Precompute O(1) Map indexes (parentsByChild, childrenByParent, activeSpouseByPerson) — zero nested per-person scans",
+    "Use index-pointer BFS queues instead of Array.shift()",
+    "Replace Math.min(...arr)/Math.max(...arr) spreads with loops to avoid call-stack overflow",
+    "Reserve top headerPt band in single-page PDF so oversized trees never overlap or clip header/legend",
+    "Scale PDF font sizes (min 0.35pt) and line widths (min 0.1pt) proportionally and skip photos when node scale < 4pt",
+    "Detect JPEG/PNG/WEBP headers accurately and deduplicate image aliases in jsPDF",
+    "Delay URL.revokeObjectURL by 60 seconds on downloads",
+    "Cap standalone HTML viewer directory/blood cards at 300, lazy-render secondary tabs, and cap Relationship dropdowns at 400 filtered options"
+  ]
+}
